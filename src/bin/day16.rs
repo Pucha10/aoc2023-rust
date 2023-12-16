@@ -80,25 +80,15 @@ fn change_matrix(
             }
         }
         '>' | '<' | '^' | 'v' => {
-            matrix[position.0 as usize][position.1 as usize] = '2';
             let (dx, dy) = get_direction(laser_dir);
             position.0 += dy;
             position.1 += dx;
             matrix = change_matrix(matrix, position, laser_dir);
         }
-
         _ => {
-            let mut parsed_num = sign.to_digit(10).unwrap();
-            parsed_num += 1;
-            matrix[position.0 as usize][position.1 as usize] =
-                std::char::from_digit(parsed_num as u32, 10).unwrap();
-            let (dx, dy) = get_direction(laser_dir);
-            position.0 += dy;
-            position.1 += dx;
-            matrix = change_matrix(matrix, position, laser_dir);
+            unreachable!()
         }
     }
-    let matrix = matrix.clone();
     matrix
 }
 
@@ -133,24 +123,52 @@ fn reflect_direction(dir: char, mirror: char) -> char {
         _ => dir,
     }
 }
+fn the_biggest_result(parsed_data: Vec<Vec<char>>) -> u32 {
+    let mut result = 0;
+    for i in 0..parsed_data[0].len() {
+        let tmp = calculate(change_matrix(parsed_data.clone(), (0, i as isize), 'v'));
+        if tmp > result {
+            result = tmp
+        }
+        let tmp = calculate(change_matrix(
+            parsed_data.clone(),
+            ((parsed_data.len() - 1) as isize, i as isize),
+            '^',
+        ));
+        if tmp > result {
+            result = tmp
+        }
+    }
+    for i in 0..parsed_data.len() {
+        let tmp = calculate(change_matrix(parsed_data.clone(), (i as isize, 0), '>'));
+        if tmp > result {
+            result = tmp
+        }
+        let tmp = calculate(change_matrix(
+            parsed_data.clone(),
+            (i as isize, (parsed_data[0].len() - 1) as isize),
+            '<',
+        ));
+        if tmp > result {
+            result = tmp
+        }
+    }
+    result
+}
 #[timed::timed]
-fn part1(data: &str) -> usize {
-    let mut parsed_data = data
+fn part1(data: &str) -> u32 {
+    let parsed_data = data
         .lines()
         .map(|x| x.chars().collect::<Vec<_>>())
         .collect::<Vec<_>>();
 
-    parsed_data = change_matrix(parsed_data, (0, 0), '>');
+    calculate(change_matrix(parsed_data, (0, 0), '>'))
+}
+fn calculate(parsed_data: Vec<Vec<char>>) -> u32 {
     let mut result = 0;
     for i in 0..parsed_data.len() {
         for j in 0..parsed_data[i].len() {
-            if parsed_data[i][j] == '>'
-                || parsed_data[i][j] == '<'
-                || parsed_data[i][j] == 'v'
-                || parsed_data[i][j] == '^'
-                || parsed_data[i][j] == '!'
-                || parsed_data[i][j] == '$'
-                || parsed_data[i][j] == '#'
+            if matches!(parsed_data[i][j], '>' | '<' | 'v' | '!' | '$' | '#' | '^')
                 || parsed_data[i][j].is_numeric()
             {
                 result += 1;
@@ -161,112 +179,11 @@ fn part1(data: &str) -> usize {
 }
 #[timed::timed]
 fn part2(data: &str) -> u32 {
-    let mut result = 0;
     let parsed_data = data
         .lines()
         .map(|x| x.chars().collect::<Vec<_>>())
         .collect::<Vec<_>>();
-    for i in 0..parsed_data[0].len() {
-        let mut tmp_matrix = parsed_data.clone();
-        tmp_matrix = change_matrix(tmp_matrix, (0, i as isize), 'v');
-        let mut tmp = 0;
-        for k in 0..tmp_matrix.len() {
-            for j in 0..tmp_matrix[i].len() {
-                if tmp_matrix[k][j] == '>'
-                    || tmp_matrix[k][j] == '<'
-                    || tmp_matrix[k][j] == 'v'
-                    || tmp_matrix[k][j] == '^'
-                    || tmp_matrix[k][j] == '!'
-                    || tmp_matrix[k][j] == '$'
-                    || tmp_matrix[k][j] == '#'
-                    || tmp_matrix[k][j].is_numeric()
-                {
-                    tmp += 1;
-                }
-            }
-        }
-        if tmp > result {
-            result = tmp
-        }
-    }
-    for i in 0..parsed_data[0].len() {
-        let mut tmp_matrix = parsed_data.clone();
-        tmp_matrix = change_matrix(
-            tmp_matrix,
-            ((parsed_data.len() - 1) as isize, i as isize),
-            '^',
-        );
-        let mut tmp = 0;
-        for k in 0..tmp_matrix.len() {
-            for j in 0..tmp_matrix[i].len() {
-                if tmp_matrix[k][j] == '>'
-                    || tmp_matrix[k][j] == '<'
-                    || tmp_matrix[k][j] == 'v'
-                    || tmp_matrix[k][j] == '^'
-                    || tmp_matrix[k][j] == '!'
-                    || tmp_matrix[k][j] == '$'
-                    || tmp_matrix[k][j] == '#'
-                    || tmp_matrix[k][j].is_numeric()
-                {
-                    tmp += 1;
-                }
-            }
-        }
-        if tmp > result {
-            result = tmp
-        }
-    }
-    for i in 0..parsed_data.len() {
-        let mut tmp_matrix = parsed_data.clone();
-        tmp_matrix = change_matrix(tmp_matrix, (i as isize, 0), '>');
-        let mut tmp = 0;
-        for k in 0..tmp_matrix.len() {
-            for j in 0..tmp_matrix[i].len() {
-                if tmp_matrix[k][j] == '>'
-                    || tmp_matrix[k][j] == '<'
-                    || tmp_matrix[k][j] == 'v'
-                    || tmp_matrix[k][j] == '^'
-                    || tmp_matrix[k][j] == '!'
-                    || tmp_matrix[k][j] == '$'
-                    || tmp_matrix[k][j] == '#'
-                    || tmp_matrix[k][j].is_numeric()
-                {
-                    tmp += 1;
-                }
-            }
-        }
-        if tmp > result {
-            result = tmp
-        }
-    }
-    for i in 0..parsed_data.len() {
-        let mut tmp_matrix = parsed_data.clone();
-        tmp_matrix = change_matrix(
-            tmp_matrix,
-            (i as isize, (parsed_data[0].len() - 1) as isize),
-            'v',
-        );
-        let mut tmp = 0;
-        for k in 0..tmp_matrix.len() {
-            for j in 0..tmp_matrix[i].len() {
-                if tmp_matrix[k][j] == '>'
-                    || tmp_matrix[k][j] == '<'
-                    || tmp_matrix[k][j] == 'v'
-                    || tmp_matrix[k][j] == '^'
-                    || tmp_matrix[k][j] == '!'
-                    || tmp_matrix[k][j] == '$'
-                    || tmp_matrix[k][j] == '#'
-                    || tmp_matrix[k][j].is_numeric()
-                {
-                    tmp += 1;
-                }
-            }
-        }
-        if tmp > result {
-            result = tmp
-        }
-    }
-    result
+    the_biggest_result(parsed_data)
 }
 fn main() {
     let data = read_data(16, InputType::NotTest);
