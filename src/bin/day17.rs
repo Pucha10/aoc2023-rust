@@ -123,6 +123,6 @@ fn part1(data: &str) -> usize {
 // }
 fn main() {
     let data = read_data(17, InputType::Test);
-    println!("Part 1: {}", part1(&data));
-    // println!("Part 2: {}", part2(&data));
+    println!("Part 1: {}", part1(&data)); //this is not working
+                                          // println!("Part 2: {}", part2(&data));
 }
